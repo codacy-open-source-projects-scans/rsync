@@ -262,6 +262,8 @@ void send_files(int f_in, int f_out)
 
 		if (ndx - cur_flist->ndx_start >= 0)
 			file = cur_flist->files[ndx - cur_flist->ndx_start];
+		else if (cur_flist->parent_ndx < 0)
+			exit_cleanup(RERR_PROTOCOL);
 		else
 			file = dir_flist->files[cur_flist->parent_ndx];
 		if (F_PATHNAME(file)) {
@@ -350,7 +352,7 @@ void send_files(int f_in, int f_out)
 			exit_cleanup(RERR_PROTOCOL);
 		}
 
-		fd = do_open(fname, O_RDONLY, 0);
+		fd = do_open_checklinks(fname);
 		if (fd == -1) {
 			if (errno == ENOENT) {
 				enum logcode c = am_daemon && protocol_version < 28 ? FERROR : FWARNING;
